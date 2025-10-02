@@ -12,7 +12,7 @@ int servo_pos = 0;
 
 int servopin = 9;
 
-int servo_sweep_angle_up = 90;
+int servo_sweep_angle_up = 0;
 int servo_sweep_angle_down = 90;
 
 int sweep_duration = 3000;
