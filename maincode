@@ -10,12 +10,15 @@ Servo servoarm1;   //servo for the arm (java type object creation)
 
 int servo_pos = 0;
 
-int servopin = 9;
+int servo_pin = 9;
 
 int servo_sweep_angle_up = 0;
 int servo_sweep_angle_down = 90;
 
 int sweep_duration = 3000;
+
+int motor_speed = 55; //normal operating speed
+
 
 //self variables end
 
@@ -40,7 +43,7 @@ const int trigPin = A2;
 const int echoPin = A3;
 
 
-// defines variables
+// defined variables
 long duration;
 int distance;
 int rightIRValue;
@@ -66,15 +69,17 @@ void setup() {
   Serial.begin(9600);           // sets up Serial library at 9600 bps
   
   //changes the following values to make the robot  drive as straight as possible  
-  L_motor.setSpeed(55);        // sets L motor speed
-  R_motor.setSpeed(55);        // sets R motor speed
+  L_motor.setSpeed(motor_speed);        // sets L motor speed for normal operation
+  R_motor.setSpeed(motor_speed);        // sets R motor speed for normal operation
  
-  R_motor.run(RELEASE);         //turns L motor on
-  L_motor.run(RELEASE);         //turns R motor on
+  R_motor.run(FORWARD);         //turns L motor on         THIS WAS WRITTEN AS RELEASE BEFORE, I CHANGED IT TO FORWARD
+  L_motor.run(FORWARD);         //turns R motor on
+
+
    pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
    pinMode(echoPin, INPUT); // Sets the echoPin as an Input  
 
-   servoarm1.attach(servopin);
+   servoarm1.attach(servo_pin); //attach the sweep arm servo to the servopin pin
 }
 
 void loop() 
@@ -88,8 +93,8 @@ void loop()
   { 
   
     // stop
-    R_motor.run(RELEASE);         
-    L_motor.run(RELEASE); 
+    R_motor.run(BRAKE);         
+    L_motor.run(BRAKE);  // THIS WAS RELEASE BEFORE, I MADE IT BRAKE
 
     sweep();  //detects that it has reached an edge or that it has to sweep something
   
