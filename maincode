@@ -1,0 +1,127 @@
+#include <AFMotor.h>
+#include <Servo.h>
+
+Servo servoarm1;   //servo for the arm (java type object creation)
+
+
+
+
+//self variables start
+
+int servo_pos = 0;
+
+int servopin = 9;
+
+int servo_sweep_angle_up = 90;
+int servo_sweep_angle_down = 90;
+
+int sweep_duration = 3000;
+
+//self variables end
+
+
+
+//SMARS Demo 4 with ultrasonic sensor
+//This sketch makes the robot avoid obstacles 
+//you'll need an Adafruit Motor shield V1 https://goo.gl/7MvZeo  and a ultrasonic sensor
+
+
+// Edits made by Jared Dilley
+
+AF_DCMotor R_motor(2);           // defines Right motor connector pin
+AF_DCMotor L_motor(1);           // defines Left motor connector pin
+AF_DCMOTOR S_motor(3);           // defines sweeping motor pin
+
+// declare variables
+int distancecm = 0; 
+const int rightIR = A4;
+const int leftIR = A1;                             
+const int trigPin = A2;
+const int echoPin = A3;
+
+
+// defines variables
+long duration;
+int distance;
+int rightIRValue;
+int leftIRValue;
+
+int ultrason_distance()
+{
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  // Calculating the distance
+  distance = duration*0.034/2;
+  // Prints the distance on the Serial Monitor
+  Serial.print("Distance: ");
+}             
+
+void setup() {
+  Serial.begin(9600);           // sets up Serial library at 9600 bps
+  
+  //changes the following values to make the robot  drive as straight as possible  
+  L_motor.setSpeed(55);        // sets L motor speed
+  R_motor.setSpeed(55);        // sets R motor speed
+ 
+  R_motor.run(RELEASE);         //turns L motor on
+  L_motor.run(RELEASE);         //turns R motor on
+   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+   pinMode(echoPin, INPUT); // Sets the echoPin as an Input  
+
+   servoarm1.attach(servopin);
+}
+
+void loop() 
+{
+  distancecm = ultrason_distance();           // distance to object using ultrasonic sensor
+  
+  rightIRValue = analogRead(rightIR); // right side check for ground
+  leftIRValue = analogRead(leftIR);   // left side check for ground
+
+  if(distance < 5 || rightIRValue > 500 || leftIRValue > 500) // back it up and turn if object or no ground
+  { 
+  
+    // stop
+    R_motor.run(RELEASE);         
+    L_motor.run(RELEASE); 
+
+    sweep();  //detects that it has reached an edge or that it has to sweep something
+  
+    // go backwards 
+    R_motor.run(BACKWARD);        
+    L_motor.run(BACKWARD);
+   
+    // turn left
+    delay(1000);
+    R_motor.run(FORWARD);         
+    L_motor.run(BACKWARD);
+    delay(1000);
+  }
+  else
+  {
+    // forward
+    L_motor.run(FORWARD);
+    R_motor.run(FORWARD); 
+  }
+
+}
+
+
+void sweep() //function that runs the S_motor (sweep motor) for sweeping, uses the servo to bring it down, then bring the arm back up while stopping the S_motor 
+{
+    S_motor.run(forward);
+
+    servoarm1.write(servo_sweep_angle_down);
+
+    delay(sweep_duration);
+
+    S_motor.run(RELEASE);
+
+   servoarm1.write(servo_sweep_angle_up);
+}
